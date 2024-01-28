@@ -10,7 +10,7 @@
     }
   ],
   "dependencies": {
-    "com.microsoft.azure.object-anchors.runtime": "file:C:/Users/HP/Desktop/Final-Project/com.microsoft.azure.object-anchors.runtime-0.25.0.tgz",
+    "com.microsoft.azure.object-anchors.runtime": "file:C:/Users/muhamad/Downloads/com.microsoft.azure.object-anchors.runtime-0.25.0.tgz",
     "com.microsoft.mixedreality.toolkit.foundation": "2.7.3",
     "com.microsoft.mixedreality.toolkit.standardassets": "2.7.3",
     "com.microsoft.mixedreality.toolkit.tools": "2.7.3",

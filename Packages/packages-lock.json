@@ -1,7 +1,7 @@
 {
   "dependencies": {
     "com.microsoft.azure.object-anchors.runtime": {
-      "version": "file:C:/Users/HP/Desktop/Final-Project/com.microsoft.azure.object-anchors.runtime-0.25.0.tgz",
+      "version": "file:C:/Users/muhamad/Downloads/com.microsoft.azure.object-anchors.runtime-0.25.0.tgz",
       "depth": 0,
       "source": "local-tarball",
       "dependencies": {}
