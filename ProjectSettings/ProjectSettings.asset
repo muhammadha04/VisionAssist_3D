@@ -637,7 +637,7 @@ PlayerSettings:
   metroCertificatePassword: 
   metroCertificateSubject: VisionAssist
   metroCertificateIssuer: VisionAssist
-  metroCertificateNotAfter: 00da1b2de55bdb01
+  metroCertificateNotAfter: 80bd076a0c71db01
   metroApplicationDescription: AOA MRTK sample application.
   wsaImages: {}
   metroTileShortName: OUMRTKApp
