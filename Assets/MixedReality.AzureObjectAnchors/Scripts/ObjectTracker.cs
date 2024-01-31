@@ -45,6 +45,10 @@ namespace Microsoft.Azure.ObjectAnchors.Unity.Sample
             Manual
         }
 
+        // Add a dictionary to store the bounding boxes of detected objects
+
+        private Dictionary<Guid, ObjectAnchorsBoundingBox> detectedObjectBoundingBoxes = new Dictionary<Guid, ObjectAnchorsBoundingBox>();
+
         /// <summary>
         /// The detection strategy to use.
         /// Auto
@@ -512,6 +516,26 @@ namespace Microsoft.Azure.ObjectAnchors.Unity.Sample
         private void _objectAnchorsService_ObjectAdded(object sender, IObjectAnchorsServiceEventArgs e)
         {
             UpdateQueue.Enqueue(() => { ObjectAdded(e); });
+
+            if (!_instanceToTrackedObject.TryGetValue(e.InstanceId, out TrackedObject to))
+            {
+                GameObject prefab = Instantiate(TrackedObjectPrefab);
+                to = prefab.GetComponent<TrackedObject>();
+                if (to == null)
+                {
+                    to = prefab.AddComponent<TrackedObject>();
+                }
+                _instanceToTrackedObject.Add(e.InstanceId, to);
+            }
+
+            to.UpdateTrackedObjectData(e);
+
+            // After updating the tracked object data, retrieve the bounding box
+             ObjectAnchorsBoundingBox? bb = to.TrackedObjectState.BaseLogicalBoundingBox;
+             if (bb.HasValue)
+             {
+                 detectedObjectBoundingBoxes[e.InstanceId] = bb.Value;
+             }
         }
 
         private void ObjectAdded(IObjectAnchorsServiceEventArgs e)
@@ -541,6 +565,7 @@ namespace Microsoft.Azure.ObjectAnchors.Unity.Sample
                     to = prefab.AddComponent<TrackedObject>();
                 }
                 _instanceToTrackedObject.Add(e.InstanceId, to);
+
             }
 
             if (TrackingStrategy != TrackingModeStrategy.Auto && e.TrackingMode != strategyToMode[TrackingStrategy])
@@ -605,6 +630,30 @@ namespace Microsoft.Azure.ObjectAnchors.Unity.Sample
             globalBoundingBox.Extents = Vector3.one * 5;
             globalBoundingBox.Orientation = _mainCamera.transform.rotation;
             QueueQueriesInBounds(globalBoundingBox);
+
+
+            Debug.Log("Prepping queries");
+            // Then do a global query for any new objects
+            ObjectAnchorsBoundingBox globalBoundingBox2 = new ObjectAnchorsBoundingBox();
+            globalBoundingBox2.Center = _mainCamera.transform.position;
+            globalBoundingBox2.Extents = Vector3.one * 3;
+            globalBoundingBox2.Orientation = _mainCamera.transform.rotation;
+            QueueQueriesInBounds(globalBoundingBox2);
+        }
+
+        private bool BoundingBoxIntersects(ObjectAnchorsBoundingBox box1, ObjectAnchorsBoundingBox box2)
+        {
+            // Check if there's separation along the X axis
+            if (Mathf.Abs(box1.Center.x - box2.Center.x) > (box1.Extents.x + box2.Extents.x)) return false;
+
+            // Check if there's separation along the Y axis
+            if (Mathf.Abs(box1.Center.y - box2.Center.y) > (box1.Extents.y + box2.Extents.y)) return false;
+
+            // Check if there's separation along the Z axis
+            if (Mathf.Abs(box1.Center.z - box2.Center.z) > (box1.Extents.z + box2.Extents.z)) return false;
+
+            // Boxes intersect
+            return true;
         }
 
         /// <summary>
@@ -638,6 +687,12 @@ namespace Microsoft.Azure.ObjectAnchors.Unity.Sample
 
             foreach (TrackableObjectQuery toq in _trackableObjectQueries)
             {
+                // Check if bounding box intersects with any existing bounding box
+                if (detectedObjectBoundingBoxes.Values.Any(existingBox => BoundingBoxIntersects(existingBox, queryBounds)))
+                {
+                    continue; // Skip this query as it intersects with an existing object
+                }
+
                 var tod = toq.TrackableObjectData;
                 ObjectQuery nextQuery = toq.Query;
 
