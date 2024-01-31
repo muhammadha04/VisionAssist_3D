@@ -440,7 +440,7 @@ namespace Microsoft.Azure.ObjectAnchors.Unity.Sample
                 }
 
                 // If nothing has been found, try another query.
-                if (_instanceToTrackedObject.Count == 0 && ActiveDetectionStrategy == DetectionStrategy.Auto)
+                if (_instanceToTrackedObject.Count < 3 && ActiveDetectionStrategy == DetectionStrategy.Manual)
                 {
                     RefillGlobalQueryQueue();
                 }
