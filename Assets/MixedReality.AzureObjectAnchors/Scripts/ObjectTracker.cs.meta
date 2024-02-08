@@ -3,10 +3,7 @@ guid: a0acaaf993cc7bb41a92ef2167eca79f
 MonoImporter:
   externalObjects: {}
   serializedVersion: 2
-  defaultReferences:
-  - TrackedObjectPrefab: {fileID: 8511243072314011145, guid: 6dacbce2a2d24e34db8a8735123f5772,
-      type: 3}
-  - EnvironmentObservationPrefab: {instanceID: 0}
+  defaultReferences: []
   executionOrder: 0
   icon: {instanceID: 0}
   userData: 

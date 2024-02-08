@@ -242,7 +242,7 @@ namespace Microsoft.Azure.ObjectAnchors.Unity.Sample
             }
         }
 
-        private float _coverageThresholdFactor = 1.0f;
+        private float _coverageThresholdFactor = 1.1f;
         public float CoverageThresholdFactor
         {
             get
@@ -390,6 +390,7 @@ namespace Microsoft.Azure.ObjectAnchors.Unity.Sample
             // future: add a refresh button...
             if (foundModelsInAppPath || foundModelsInObjects3D)
             {
+                Debug.Log("inside foundModelIs");
                 _objectAnchorsService.ObjectAdded += _objectAnchorsService_ObjectAdded;
                 _objectAnchorsService.ObjectUpdated += _objectAnchorsService_ObjectUpdated;
                 _objectAnchorsService.ObjectRemoved += _objectAnchorsService_ObjectRemoved;
@@ -432,14 +433,28 @@ namespace Microsoft.Azure.ObjectAnchors.Unity.Sample
             {
                 if (TrackingStrategy == TrackingModeStrategy.Auto)
                 {
+                    Debug.Log("TrackingStrategy: TrackingModeStrategy");
                     ManageLocatedObjectTrackingStates();
                 }
+
+                //log ActiveDetectionStrategy in debug.log
+                if (ActiveDetectionStrategy == DetectionStrategy.Auto)
+                {
+                    Debug.Log("ActiveDetectionStrategy: Auto");
+                }
+                else
+                {
+                    Debug.Log("ActiveDetectionStrategy: Manual");
+                }
+
 
                 // If nothing has been found, try another query.
                 if (_instanceToTrackedObject.Count == 0 && ActiveDetectionStrategy == DetectionStrategy.Auto)
                 {
+                    Debug.Log("Inside Detection if");
                     RefillGlobalQueryQueue();
                 }
+
             }
         }
 
@@ -640,6 +655,7 @@ namespace Microsoft.Azure.ObjectAnchors.Unity.Sample
 
                 if (tod.UseCustomParameters)
                 {
+                    Debug.Log("Custom params");
                     nextQuery.MinSurfaceCoverage = tod.MinSurfaceCoverage;
                     nextQuery.IsExpectedToBeStandingOnGroundPlane = tod.IsExpectedToBeStandingOnGroundPlane;
                     nextQuery.ExpectedMaxVerticalOrientationInDegrees = tod.ExpectedMaxVerticalOrientationInDegrees;

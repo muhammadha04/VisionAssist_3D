@@ -1,0 +1,32 @@
+﻿  il2cpp.exe didn't catch exception: System.InvalidOperationException: C++ code builder is unable to build C++ code. In order to build C++ code for Universal Windows Platform, you must have one of these installed:
+          Visual Studio 2015 with C++ compilers and Windows 10 SDK (it cannot build C++ code because it is not installed or missing C++ workload component)
+          Visual Studio 2015 installation is found by looking at "SOFTWARE\Microsoft\VisualStudio\14.0_Config\InstallDir" in the registry
+          Windows 10 SDK is found by looking at "SOFTWARE\Wow6432Node\Microsoft\Microsoft SDKs\Windows\v10.0\InstallationFolder" in the registry
+  
+          Visual Studio 2017 (or newer) with C++ compilers and Windows 10 SDK (it cannot build C++ code because architecture ARM64 is not supported by this Visual Studio version)
+          Visual Studio 2017 (or newer) installation is found using Microsoft.VisualStudio.Setup.Configuration COM APIs
+          Windows 10 SDK is found by looking at "SOFTWARE\Wow6432Node\Microsoft\Microsoft SDKs\Windows\v10.0\InstallationFolder" in the registry
+  
+  
+     at Unity.IL2CPP.Building.CppProgramBuilder.ThrowIfCannotBuildInCurrentEnvironment()
+     at Unity.IL2CPP.Building.CppProgramBuilder.Build(IBuildStatistics& statistics)
+     at il2cpp.Program.DoRun(String[] args, List`1 foundAssemblies)
+     at il2cpp.Program.Run(String[] args, Boolean setInvariantCulture)
+     at il2cpp.Program.Main(String[] args)
+  
+  Unhandled Exception: System.InvalidOperationException: C++ code builder is unable to build C++ code. In order to build C++ code for Universal Windows Platform, you must have one of these installed:
+          Visual Studio 2015 with C++ compilers and Windows 10 SDK (it cannot build C++ code because it is not installed or missing C++ workload component)
+          Visual Studio 2015 installation is found by looking at "SOFTWARE\Microsoft\VisualStudio\14.0_Config\InstallDir" in the registry
+          Windows 10 SDK is found by looking at "SOFTWARE\Wow6432Node\Microsoft\Microsoft SDKs\Windows\v10.0\InstallationFolder" in the registry
+  
+          Visual Studio 2017 (or newer) with C++ compilers and Windows 10 SDK (it cannot build C++ code because architecture ARM64 is not supported by this Visual Studio version)
+          Visual Studio 2017 (or newer) installation is found using Microsoft.VisualStudio.Setup.Configuration COM APIs
+          Windows 10 SDK is found by looking at "SOFTWARE\Wow6432Node\Microsoft\Microsoft SDKs\Windows\v10.0\InstallationFolder" in the registry
+  
+  
+     at Unity.IL2CPP.Building.CppProgramBuilder.ThrowIfCannotBuildInCurrentEnvironment()
+     at Unity.IL2CPP.Building.CppProgramBuilder.Build(IBuildStatistics& statistics)
+     at il2cpp.Program.DoRun(String[] args, List`1 foundAssemblies)
+     at il2cpp.Program.Run(String[] args, Boolean setInvariantCulture)
+     at il2cpp.Program.Main(String[] args)
+C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Microsoft\VC\v170\Microsoft.MakeFile.Targets(45,5): error MSB3073: The command ""C:\Users\Amplilab\Desktop\VisionAssist\Builds\initial_build\Il2CppOutputProject\\IL2CPP\build\deploy\net471\il2cpp.exe" --libil2cpp-static --compile-cpp -architecture=ARM64 -configuration=Debug -platform=winrt -outputpath="C:\Users\Amplilab\Desktop\VisionAssist\Builds\initial_build\\build\bin\ARM64\Debug\GameAssembly.dll" --data-folder="C:\Users\Amplilab\Desktop\VisionAssist\Builds\initial_build\\build\bin\ARM64\Debug\\" -cachedirectory="C:\Users\Amplilab\Desktop\VisionAssist\Builds\initial_build\\build\obj\il2cppOutputProject\ARM64\Debug\\" -generatedcppdir="C:\Users\Amplilab\Desktop\VisionAssist\Builds\initial_build\Il2CppOutputProject\\Source"  --profiler-report --additional-defines=WINDOWS_UWP --additional-defines=UNITY_UWP --additional-defines=UNITY_WSA_10_0 --additional-defines=UNITY_WSA --additional-defines=UNITY_WINRT --additional-defines=PLATFORM_WINRT -dotnetprofile=unityaot -verbose --relative-data-path=Data/il2cpp_data --map-file-parser="C:\Users\Amplilab\Desktop\VisionAssist\Builds\initial_build\Il2CppOutputProject\\IL2CPP\MapFileParser\MapFileParser.exe" --compiler-flags="-d2ssa-cfg-jt-"" exited with code -532462766.

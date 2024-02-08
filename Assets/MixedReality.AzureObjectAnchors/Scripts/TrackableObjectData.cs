@@ -8,12 +8,12 @@ namespace Microsoft.Azure.ObjectAnchors.Unity.Sample
     public class TrackableObjectData
     {
         // Set to true if you want to use your own model parameters, false to ignore them
-        public bool UseCustomParameters = false;
+        public bool UseCustomParameters = true;
 
         // Is the model standing on the ground
         public bool IsExpectedToBeStandingOnGroundPlane;
 
-        private float _minSurfaceCoverage = 0.4f;
+        private float _minSurfaceCoverage = 0.7f;
 
         // The score needed before there is a match. The higher the amount, the more likely the physical object is actually a match.
         // Valid range between 0 and 1
@@ -50,7 +50,7 @@ namespace Microsoft.Azure.ObjectAnchors.Unity.Sample
             }
         }
 
-        public float _maxScaleChange = 0.1f;
+        public float _maxScaleChange = 0.2f;
         // Max scale change along object model's XYZ principle axes.
         // Valid range between 0 and 1.
         public float MaxScaleChange

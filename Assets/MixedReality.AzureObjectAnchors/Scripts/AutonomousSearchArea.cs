@@ -45,11 +45,13 @@ namespace Microsoft.Azure.ObjectAnchors.Unity.Sample
                 return;
             }
 
-            if (_objectTracker.TrackedObjectCount == 0 || Time.frameCount - _lastQueryFrame > 60)
+            if (_objectTracker.TrackedObjectCount < 2 || Time.frameCount - _lastQueryFrame > 60)
             {
+                Debug.Log("inside Update of Autonomous");
                 _lastQueryFrame = Time.frameCount;
-                if (_objectTracker.TrackedObjectCount == 0)
+                if (_objectTracker.TrackedObjectCount < 2)
                 {
+                    Debug.Log("UpdateBoxForGlobalQuery");
                     // if we haven't found anything, we will do a query where the box is
                     UpdateBoxForGlobalQuery();
                 }

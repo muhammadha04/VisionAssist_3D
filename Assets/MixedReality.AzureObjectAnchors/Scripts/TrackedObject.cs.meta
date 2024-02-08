@@ -3,14 +3,7 @@ guid: 3914b46ee0065004cb7632902862268d
 MonoImporter:
   externalObjects: {}
   serializedVersion: 2
-  defaultReferences:
-  - MultiAnchorPlacement: {fileID: 1250583444212700300, guid: 1fa583daffdf0834faf3792f4a8d80ec,
-      type: 3}
-  - SingleAnchorPlacement: {fileID: 8511243072314011145, guid: 6dacbce2a2d24e34db8a8735123f5772,
-      type: 3}
-  - LogicalCenter: {instanceID: 0}
-  - SingleAnchorRenderer: {instanceID: 0}
-  - MultiAnchorRenderer: {instanceID: 0}
+  defaultReferences: []
   executionOrder: 0
   icon: {instanceID: 0}
   userData: 

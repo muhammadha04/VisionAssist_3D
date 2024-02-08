@@ -1,0 +1,1 @@
+﻿C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Microsoft\VC\v170\Microsoft.CppBuild.targets(457,5): error MSB8020: The build tools for 'v142' application Type UWP (Platform Toolset = 'Visual Studio 2019') cannot be found. Please install the workflow for this application type and include the build tools for the 

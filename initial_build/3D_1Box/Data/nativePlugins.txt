@@ -1,0 +1,7 @@
+ObjectTrackerFusion.dll
+ObjectTrackerDiagnostics.dll
+ObjectTrackerApi.dll
+Microsoft.Azure.ObjectAnchors.dll
+ObjectTrackerRefinement.dll
+
+VolumeFusionAPI.dll
