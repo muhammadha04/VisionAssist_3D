@@ -53,7 +53,7 @@ namespace Microsoft.Azure.ObjectAnchors.Unity.Sample
         /// Manual
         ///     - Objects will attempt to be detected when requested through the StartQuery or QueueQueriesInBounds methods
         /// </summary>
-        public DetectionStrategy ActiveDetectionStrategy = DetectionStrategy.Auto;
+        public DetectionStrategy ActiveDetectionStrategy = DetectionStrategy.Manual;
 
         private ObjectObservationMode _observationMode = ObjectObservationMode.Ambient;
 
@@ -89,7 +89,7 @@ namespace Microsoft.Azure.ObjectAnchors.Unity.Sample
             Pause
         }
 
-        private TrackingModeStrategy _trackingStrategy = TrackingModeStrategy.Auto;
+        private TrackingModeStrategy _trackingStrategy = TrackingModeStrategy.Pause;
 
         /// <summary>
         /// The Tracking Strategy to use.
@@ -449,7 +449,7 @@ namespace Microsoft.Azure.ObjectAnchors.Unity.Sample
 
 
                 // If nothing has been found, try another query.
-                if (_instanceToTrackedObject.Count == 0 && ActiveDetectionStrategy == DetectionStrategy.Auto)
+                if (ActiveDetectionStrategy == DetectionStrategy.Manual)
                 {
                     Debug.Log("Inside Detection if");
                     RefillGlobalQueryQueue();

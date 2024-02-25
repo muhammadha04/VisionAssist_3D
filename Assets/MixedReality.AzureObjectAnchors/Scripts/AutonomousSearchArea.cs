@@ -16,7 +16,7 @@ namespace Microsoft.Azure.ObjectAnchors.Unity.Sample
     [RequireComponent(typeof(SearchAreaController))]
     public class AutonomousSearchArea : MonoBehaviour
     {
-        private const float RefineBoxStartingSizeMultiplier = 1.10f;
+        private const float RefineBoxStartingSizeMultiplier = 1.1f;
         private const float CoarseDetectionMinSurfaceCoverageMultiplier = 0.6f;
 
         private IObjectAnchorsService _objectAnchorsService;
@@ -45,11 +45,11 @@ namespace Microsoft.Azure.ObjectAnchors.Unity.Sample
                 return;
             }
 
-            if (_objectTracker.TrackedObjectCount < 2 || Time.frameCount - _lastQueryFrame > 60)
+            if (_objectTracker.TrackedObjectCount < 10 || Time.frameCount - _lastQueryFrame > 60)
             {
                 Debug.Log("inside Update of Autonomous");
                 _lastQueryFrame = Time.frameCount;
-                if (_objectTracker.TrackedObjectCount < 2)
+                if (_objectTracker.TrackedObjectCount < 10)
                 {
                     Debug.Log("UpdateBoxForGlobalQuery");
                     // if we haven't found anything, we will do a query where the box is
