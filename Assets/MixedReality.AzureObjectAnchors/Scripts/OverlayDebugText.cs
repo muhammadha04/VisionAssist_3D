@@ -33,10 +33,10 @@ namespace Microsoft.Azure.ObjectAnchors.Unity.Sample
         private void UpdateText()
         {
             TextField.text =
-                $"AOA Status: {_objectAnchorsService.Status}\n" +
-                $"Tracked: {_objectAnchorsService.TrackingResults.Count}\n" +
-                $"Models: {_objectAnchorsService.ModelIds.Count}\n" +
-                $"Querying: {_objectTracker.QueryActive}";
+                $"Detection Status: {_objectAnchorsService.Status}\n" +
+                $"Objects Tracked: {_objectAnchorsService.TrackingResults.Count}\n" +
+                $"Number of Models: {_objectAnchorsService.ModelIds.Count}\n" +
+                $"Searching..: {_objectTracker.QueryActive}";
         }
     }
 }

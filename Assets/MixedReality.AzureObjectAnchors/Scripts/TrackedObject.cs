@@ -111,14 +111,10 @@ namespace Microsoft.Azure.ObjectAnchors.Unity.Sample
             {
 
                 _debugText.text =
-                    $"id: {TrackedObjectState.InstanceId}\n" +
-                    $"Model: {TrackedObjectState.ModelId}\n" +
                     $"Name: {TrackedObjectState.ModelFileName}\n" +
-                    $"Located: {TrackedObjectState.Location.HasValue}\n" +
-                    $"Updated: {TrackedObjectState.LastUpdatedTime.ToString("hh:mm:ss.fff")}\n" +
+                    $"Updated: {TrackedObjectState.LastUpdatedTime.ToString("hh:mm:ss")}\n" +
                     $"Cov: {TrackedObjectState.SurfaceCoverage}\n" +
-                    $"Scale: {TrackedObjectState.Scale.x} {TrackedObjectState.Scale.y} {TrackedObjectState.Scale.z}\n" +
-                    $"Tracking Mode: {TrackedObjectState.TrackingMode}";
+                    $"Scale: {TrackedObjectState.Scale.x} {TrackedObjectState.Scale.y} {TrackedObjectState.Scale.z}\n";
 
                 ObjectAnchorsBoundingBox? bb = TrackedObjectState.BaseLogicalBoundingBox;
                 if (bb.HasValue)
