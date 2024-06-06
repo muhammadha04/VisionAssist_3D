@@ -7,22 +7,20 @@
       "dependencies": {}
     },
     "com.microsoft.mixedreality.toolkit.foundation": {
-      "version": "2.7.3",
+      "version": "file:MixedReality/com.microsoft.mixedreality.toolkit.foundation-2.8.3.tgz",
       "depth": 0,
-      "source": "registry",
+      "source": "local-tarball",
       "dependencies": {
-        "com.microsoft.mixedreality.toolkit.standardassets": "2.7.3"
-      },
-      "url": "https://pkgs.dev.azure.com/aipmr/MixedReality-Unity-Packages/_packaging/Unity-packages/npm/registry"
+        "com.microsoft.mixedreality.toolkit.standardassets": "2.8.3"
+      }
     },
     "com.microsoft.mixedreality.toolkit.standardassets": {
-      "version": "2.7.3",
+      "version": "file:MixedReality/com.microsoft.mixedreality.toolkit.standardassets-2.8.3.tgz",
       "depth": 0,
-      "source": "registry",
+      "source": "local-tarball",
       "dependencies": {
         "com.unity.textmeshpro": "2.1.4"
-      },
-      "url": "https://pkgs.dev.azure.com/aipmr/MixedReality-Unity-Packages/_packaging/Unity-packages/npm/registry"
+      }
     },
     "com.microsoft.mixedreality.toolkit.tools": {
       "version": "2.7.3",
@@ -32,6 +30,12 @@
         "com.microsoft.mixedreality.toolkit.foundation": "2.7.3"
       },
       "url": "https://pkgs.dev.azure.com/aipmr/MixedReality-Unity-Packages/_packaging/Unity-packages/npm/registry"
+    },
+    "com.microsoft.windows.mixedreality.dotnetwinrt": {
+      "version": "file:MixedReality/com.microsoft.windows.mixedreality.dotnetwinrt-0.5.2009.tgz",
+      "depth": 0,
+      "source": "local-tarball",
+      "dependencies": {}
     },
     "com.unity.collab-proxy": {
       "version": "1.14.18",

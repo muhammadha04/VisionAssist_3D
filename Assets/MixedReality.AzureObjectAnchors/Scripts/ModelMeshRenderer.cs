@@ -55,6 +55,7 @@ public class ModelMeshRenderer : MonoBehaviour
         {
             case MeshTopology.Triangles:
                 MeshRendererComponent.material.SetColor(_wireFrameColorParameter, color);
+                //set transparenc to 0
                 break;
             default:
                 MeshRendererComponent.material.color = color;

@@ -44,9 +44,10 @@ public class EnvironmentObservationRenderer : MonoBehaviour
 
     async void Update()
     {
-        if (!_updateInProgress && (DateTime.Now - _lastMeshUpdateTime) > TimeSpan.FromSeconds(2))
+        if (!_updateInProgress && (DateTime.Now - _lastMeshUpdateTime) > TimeSpan.FromSeconds(0.5))
         {
             _updateInProgress = true;
+            Debug.Log("Updating environment observation renderer mesh");
             EnvironmentObservation observation = await Query.ComputeLatestEnvironmentObservationAsync(EnvironmentTopology);
 #if SPATIALCOORDINATESYSTEM_API_PRESENT
             ObjectAnchorsLocation? observationLocation = await _mesh.LocateAndSetFromEnvironmentObservation(observation);
@@ -58,6 +59,7 @@ public class EnvironmentObservationRenderer : MonoBehaviour
 
             _lastMeshUpdateTime = DateTime.Now;
             _updateInProgress = false;
+            Debug.Log("Updated environment observation renderer mesh in time: " + (DateTime.Now - _lastMeshUpdateTime).TotalMilliseconds + "ms");
         }
     }
 }

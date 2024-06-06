@@ -5,7 +5,12 @@ using UnityEngine;
 // Ensure you have the correct namespaces for Mixed Reality Toolkit
 using Microsoft.MixedReality.Toolkit.Input;
 using Microsoft.MixedReality.Toolkit;
+using Microsoft.MixedReality.Toolkit.Utilities;
+
 using static System.Net.Mime.MediaTypeNames;
+//using System.Diagnostics;
+using Microsoft.MixedReality.Toolkit.UI;
+//using System.Diagnostics;
 
 public class Experiment_Logger : MonoBehaviour
 {
@@ -13,12 +18,19 @@ public class Experiment_Logger : MonoBehaviour
     private float startTime;
     private string filePath; // File path to save data
     private string fileName; // File name to save data
-    public bool loggingInProcess = true; // True while logging in process
+    public bool loggingInProcess = false; // True while logging in process
     public GameObject gameObjectPrefab; // Prefab to instantiate
+    private string testSubjectName = string.Empty;
+    private bool isNameInputInProgress = false;
+
+    public AudioSource beepSource; // Audio source for beep sound
+    public AudioSource BeginName;
+    public AudioSource EndName;
+    public AudioSource startLogging;
+    public AudioSource finishLogging;
 
     void Start()
     {
-        Debug.Log("+++++++Start");
         if (CoreServices.InputSystem == null)
         {
             Debug.Log("Input System is not initialized.");
@@ -29,8 +41,7 @@ public class Experiment_Logger : MonoBehaviour
         }
         else
         {
-            Debug.Log("Logging eyeGaze.");
-            BeginLogging();
+            Debug.Log("No Problems.");
         }
     }
 
@@ -39,8 +50,76 @@ public class Experiment_Logger : MonoBehaviour
         while (loggingInProcess)
         {
             LogData(); // Call your existing logging method
-            yield return new WaitForSeconds(0.33f); // Wait for 0.33 seconds
+            yield return new WaitForSeconds(0.1f); // Wait for 0.33 seconds
         }
+    }
+    void Update()
+    {
+        if (Input.GetKeyDown(KeyCode.UpArrow))
+        {
+            //play enter details
+            
+            if (!loggingInProcess)
+            {
+                if (!isNameInputInProgress)
+                {
+                    BeginName.Play();
+                    isNameInputInProgress = true;
+                    testSubjectName = "";
+                    Debug.Log("Please enter the test subject's name (press '/' to finish):");
+                }
+            }
+            
+        }
+
+
+        //if 'P' is pressed, stop logging
+        if (Input.GetKeyDown(KeyCode.P) && loggingInProcess)
+        {
+            EndLogging();
+        }
+
+        if (isNameInputInProgress)
+        {
+            
+            //if ARROW DOWN IS CLICKED
+            if (Input.GetKeyDown(KeyCode.DownArrow)) {
+                
+                isNameInputInProgress = false;
+                if (string.IsNullOrEmpty(testSubjectName))
+                {
+                    Debug.Log("No test subject name entered. Logging will not start.");
+                }
+                else
+                {
+                    Debug.Log("Logging started for test subject: " + testSubjectName);
+                    //play starte sound
+                    startLogging.Play();
+                    BeginLogging();
+                }
+            }
+            else
+            {
+                
+                char inputChar = GetInputChar();
+                if (inputChar != '\0')
+                {
+                    testSubjectName += inputChar;
+                    Debug.Log("Current test subject name: " + testSubjectName);
+                }
+            }
+        }
+    }
+    private char GetInputChar()
+    {
+        foreach (char c in Input.inputString)
+        {
+            if (c != '\0')
+            {
+                return c;
+            }
+        }
+        return '\0';
     }
     //initiate frame counter
 
@@ -72,7 +151,7 @@ public class Experiment_Logger : MonoBehaviour
             double distance = 0.0;
             if (gameObjectPrefab != null)
             {
-                Debug.Log("inside not null "+gameObjectPrefab.name);
+               // Debug.Log("inside not null "+gameObjectPrefab.name);
 
 
                 //rescale prefab to 0.01%
@@ -90,7 +169,7 @@ public class Experiment_Logger : MonoBehaviour
                     distance = Vector3.Distance(Camera.transform.position, hitInfo.point);
 
 
-                    Debug.Log($" {hitInfo.collider.gameObject.name} Hit at position {hitInfo.point}; Distance from camera {distance};");
+                    //Debug.Log($" {hitInfo.collider.gameObject.name} Hit at position {hitInfo.point}; Distance from camera {distance};");
                         writer.WriteLine($"{tempTime}, {tempPos.x}, {tempPos.y}, {tempPos.z}, {tempRot.x}, {tempRot.y}, {tempRot.z}, {hitInfo.collider.gameObject.name}, {hitInfo.point}, {distance}");
                     
                         
@@ -100,7 +179,7 @@ public class Experiment_Logger : MonoBehaviour
             {
                 Debug.LogError("Prefab not found in Resources.");
             }
-            Debug.Log($"Position {tempPos.x}; {tempPos.y}; {tempPos.z}");
+            //Debug.Log($"Position {tempPos.x}; {tempPos.y}; {tempPos.z}");
 
         }
     }
@@ -109,23 +188,42 @@ public class Experiment_Logger : MonoBehaviour
     private Vector3 initialPosition;
     private Quaternion initialRotation;
 
-    public void BeginLogging()
+    private void BeginLogging()
     {
-        Debug.Log("inside BeginLogging");
         if (!loggingInProcess)
         {
             loggingInProcess = true;
             startTime = Time.time;
-            string timeStamp = DateTime.Now.ToString("yyyy-MM-dd_hh-mm-ss-tt");
+            string timeStamp = testSubjectName.ToString() + "_" + DateTime.Now.ToString("yyyy-MM-dd_hh-mm-ss-tt");
             initialPosition = Camera.transform.position;
             initialRotation = Camera.transform.rotation;
 
             fileName = $"{timeStamp}.txt";
+
+            //make sure filepath is correct and there are no name errors
+            for(int i = 0; i < testSubjectName.Length; i++)
+            {
+
+
+                //if not a number of a letter, replace with 'X'
+                if (!char.IsLetterOrDigit(fileName[i]))
+                {
+                    Debug.Log("Invalid character in file path: " + fileName[i] + " at index: " + i);
+
+                    fileName = fileName.Remove(i, 1).Insert(i, "X");
+                }
+            }
             filePath = Path.Combine(UnityEngine.Application.persistentDataPath, fileName);
+
+
             StartCoroutine(LogDataRoutine());
+            if (startLogging != null)
+            {
+                //play start sound
+                startLogging.Play();
+            }
         }
     }
-
     void OnApplicationQuit()
     {
         EndLogging();
@@ -133,10 +231,18 @@ public class Experiment_Logger : MonoBehaviour
 
     public void EndLogging()
     {
+
+
+
         if (loggingInProcess)
         {
             loggingInProcess = false;
             StopCoroutine(LogDataRoutine());
+            if (beepSource != null)
+            {
+                //play end sound
+                finishLogging.Play();
+            }
         }
     }
 }

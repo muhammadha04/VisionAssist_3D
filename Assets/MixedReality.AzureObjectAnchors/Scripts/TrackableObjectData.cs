@@ -8,12 +8,12 @@ namespace Microsoft.Azure.ObjectAnchors.Unity.Sample
     public class TrackableObjectData
     {
         // Set to true if you want to use your own model parameters, false to ignore them
-        public bool UseCustomParameters = true;
+        public bool UseCustomParameters = false;
 
         // Is the model standing on the ground
         public bool IsExpectedToBeStandingOnGroundPlane;
 
-        private float _minSurfaceCoverage = 0.7f;
+        private float _minSurfaceCoverage = 0.4f;
 
         // The score needed before there is a match. The higher the amount, the more likely the physical object is actually a match.
         // Valid range between 0 and 1
@@ -96,7 +96,7 @@ namespace Microsoft.Azure.ObjectAnchors.Unity.Sample
 
         public string BoundingBoxInfo(ObjectAnchorsBoundingBox boundingBox)
         {
-            return
+            return 
                 $"Center: {boundingBox.Center}\n" +
                 $"Extents: {boundingBox.Extents}\n" +
                 $"Orientation: {boundingBox.Orientation}";

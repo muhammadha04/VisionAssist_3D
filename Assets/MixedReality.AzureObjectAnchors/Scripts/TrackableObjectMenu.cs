@@ -95,6 +95,25 @@ namespace Microsoft.Azure.ObjectAnchors.Unity.Sample
             _objectTracker = ObjectTracker.Instance;
         }
 
+        //update func
+        private void Update()
+        {
+            if (Input.GetKey(KeyCode.PageUp))
+            {
+                Debug.Log("start search");
+                StartSearch();
+            }
+
+            //if 'page down' is pressed, stop search
+            if (Input.GetKey(KeyCode.PageDown))
+            {
+
+                Debug.Log("Stop search");
+
+                StopSearch();
+            }
+        }
+
         private void OnDisable()
         {
             StartSearchButton?.OnClick.RemoveListener(StartSearch);

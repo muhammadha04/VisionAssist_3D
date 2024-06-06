@@ -53,7 +53,7 @@ namespace Microsoft.Azure.ObjectAnchors.Unity.Sample
         /// Manual
         ///     - Objects will attempt to be detected when requested through the StartQuery or QueueQueriesInBounds methods
         /// </summary>
-        public DetectionStrategy ActiveDetectionStrategy = DetectionStrategy.Manual;
+        public DetectionStrategy ActiveDetectionStrategy = DetectionStrategy.Auto;
 
         private ObjectObservationMode _observationMode = ObjectObservationMode.Ambient;
 
@@ -186,6 +186,19 @@ namespace Microsoft.Azure.ObjectAnchors.Unity.Sample
         private GameObject _environmentObservationVisuals;
         private void UpdateEnvironmentObservationVisuals()
         {
+            if (_environmentObservationVisuals != null)
+            {
+                _environmentObservationVisuals.SetActive(ShowEnvironmentObservations && _objectAnchorsService.Status == ObjectAnchorsServiceStatus.Running);
+
+                foreach (var toq in _trackableObjectQueries)
+                {
+                    if (toq.EnvironmentObservation != null)
+                    {
+                        toq.EnvironmentObservation.gameObject.SetActive(ShowEnvironmentObservations && _objectAnchorsService.Status == ObjectAnchorsServiceStatus.Running);
+                    }
+                }
+            }
+
             _environmentObservationVisuals.SetActive(ShowEnvironmentObservations && _objectAnchorsService.Status == ObjectAnchorsServiceStatus.Running);
         }
 
@@ -242,7 +255,7 @@ namespace Microsoft.Azure.ObjectAnchors.Unity.Sample
             }
         }
 
-        private float _coverageThresholdFactor = 1.1f;
+        private float _coverageThresholdFactor = 1.0f;
         public float CoverageThresholdFactor
         {
             get
@@ -308,14 +321,17 @@ namespace Microsoft.Azure.ObjectAnchors.Unity.Sample
             UpdateEnvironmentObservationVisuals();
             if (_trackableObjectQueries.Count != 0)
             {
-                var toq = _trackableObjectQueries.First();
-                toq.EnvironmentObservation = Instantiate(EnvironmentObservationPrefab).GetComponent<EnvironmentObservationRenderer>();
-                toq.EnvironmentObservation.transform.parent = _environmentObservationVisuals.transform;
-                toq.EnvironmentObservation.Query = toq.Query;
-                toq.EnvironmentObservation.EnvironmentTopology =
-                    ObservationMode == ObjectObservationMode.Ambient ? // Ambient observation mode only supports providing a point cloud.
-                        EnvironmentObservationTopology.PointCloud :
-                        EnvironmentObservationTopology.TriangleList;
+                foreach (var toq in _trackableObjectQueries)
+                {
+                    toq.EnvironmentObservation = Instantiate(EnvironmentObservationPrefab).GetComponent<EnvironmentObservationRenderer>();
+                    toq.EnvironmentObservation.transform.parent = _environmentObservationVisuals.transform;
+                    toq.EnvironmentObservation.Query = toq.Query;
+                    toq.EnvironmentObservation.EnvironmentTopology =
+                        ObservationMode == ObjectObservationMode.Ambient ? // Ambient observation mode only supports providing a point cloud.
+                            EnvironmentObservationTopology.PointCloud :
+                            EnvironmentObservationTopology.TriangleList;
+                }
+                UpdateEnvironmentObservationVisuals();
             }
         }
 
@@ -390,9 +406,8 @@ namespace Microsoft.Azure.ObjectAnchors.Unity.Sample
             // future: add a refresh button...
             if (foundModelsInAppPath || foundModelsInObjects3D)
             {
-                Debug.Log("inside foundModelIs");
                 _objectAnchorsService.ObjectAdded += _objectAnchorsService_ObjectAdded;
-                _objectAnchorsService.ObjectUpdated += _objectAnchorsService_ObjectUpdated;
+               // _objectAnchorsService.ObjectUpdated += _objectAnchorsService_ObjectUpdated;
                 _objectAnchorsService.ObjectRemoved += _objectAnchorsService_ObjectRemoved;
                 _objectAnchorsService.RunningChanged += _objectAnchorsService_RunningChanged;
                 Debug.Log("Object detector ready");
@@ -403,11 +418,8 @@ namespace Microsoft.Azure.ObjectAnchors.Unity.Sample
                 enabled = false;
             }
         }
-
         private async void Update()
         {
-            // even though this is an 'async' function, unity will call Update each frame
-            // even if a previous update is awaiting.
             if (_awaiting)
             {
                 return;
@@ -421,40 +433,43 @@ namespace Microsoft.Azure.ObjectAnchors.Unity.Sample
             }
             else if (_queryQueue.TryDequeue(out nextQuery))
             {
+
+                //log "before detect object"
+                Debug.Log("before // detect object");
                 _awaiting = true;
                 QueryActive = true;
                 ActiveQueries = nextQuery;
+
+                DateTime _lastMeshUpdateTime = DateTime.MinValue;
+                //await and log how long it took
                 await _objectAnchorsService.DetectObjectAsync(nextQuery.Item2.ToArray());
-                ActiveQueries = null;
-                QueryActive = false;
-                _awaiting = false;
+
+                //ms is how long it took
+                Debug.Log("after // detect object: " + (DateTime.Now - _lastMeshUpdateTime).TotalMilliseconds + "ms");
+
+
+
+               
+
+        _awaiting = false;
+        QueryActive = false;
+        ActiveQueries = null;
+
+                
             }
-            else if (_objectAnchorsService.Status == ObjectAnchorsServiceStatus.Running)
+            if (_objectAnchorsService.Status == ObjectAnchorsServiceStatus.Running)
             {
-                if (TrackingStrategy == TrackingModeStrategy.Auto)
-                {
-                    Debug.Log("TrackingStrategy: TrackingModeStrategy");
-                    ManageLocatedObjectTrackingStates();
-                }
+               
 
-                //log ActiveDetectionStrategy in debug.log
-                if (ActiveDetectionStrategy == DetectionStrategy.Auto)
+                //if smaller than min objects to track
+                if (_instanceToTrackedObject.Count < MinObjectsToTrack )
                 {
-                    Debug.Log("ActiveDetectionStrategy: Auto");
-                }
-                else
-                {
-                    Debug.Log("ActiveDetectionStrategy: Manual");
-                }
 
+                    Debug.Log("refilling global query queue from update inside < objects");
 
-                // If nothing has been found, try another query.
-                if (ActiveDetectionStrategy == DetectionStrategy.Manual)
-                {
-                    Debug.Log("Inside Detection if");
                     RefillGlobalQueryQueue();
                 }
-
+                
             }
         }
 
@@ -584,22 +599,23 @@ namespace Microsoft.Azure.ObjectAnchors.Unity.Sample
         /// <summary>
         /// Manages tracking mode based on use visibility of an object.
         /// </summary>
+        private const int MinObjectsToTrack = 8; // Set your desired minimum number of objects to track
+
         private void ManageLocatedObjectTrackingStates()
         {
             List<ObjectQuery> nextQuerySet = new List<ObjectQuery>();
             // Start with a 'refining' query for objects in the users field of view.
             foreach (KeyValuePair<Guid, TrackedObject> kvp in _instanceToTrackedObject)
             {
-                if (_mainCamera.IsInFOV(kvp.Value.LogicalCenter.transform.position))
-                {
-                    // if the user is looking at the object, set its tracking mode to high accuracy.
-                    _objectAnchorsService.SetObjectInstanceTrackingMode(kvp.Key, ObjectInstanceTrackingMode.HighLatencyAccuratePosition);
-                }
-                else
-                {
+                
                     // otherwise, pause tracking for the object
                     _objectAnchorsService.SetObjectInstanceTrackingMode(kvp.Key, ObjectInstanceTrackingMode.Paused);
-                }
+                
+            }
+
+            if (_instanceToTrackedObject.Count < MinObjectsToTrack && ActiveDetectionStrategy == DetectionStrategy.Auto)
+            {
+                RefillGlobalQueryQueue();
             }
         }
 
@@ -607,31 +623,19 @@ namespace Microsoft.Azure.ObjectAnchors.Unity.Sample
         /// creates queries around the user for all known models
         /// </summary>
         private void RefillGlobalQueryQueue()
-        {
-            Debug.Log("Prepping queries");
-            // Then do a global query for any new objects
+{
+    Debug.Log("Prepping queries++++");
+
             ObjectAnchorsBoundingBox globalBoundingBox = new ObjectAnchorsBoundingBox();
             globalBoundingBox.Center = _mainCamera.transform.position;
-            globalBoundingBox.Extents = Vector3.one * 5;
-            globalBoundingBox.Orientation = _mainCamera.transform.rotation;
+            globalBoundingBox.Extents = Vector3.one * 20;
+            globalBoundingBox.Orientation = _mainCamera.transform.rotation; 
             QueueQueriesInBounds(globalBoundingBox);
-        }
+}
 
-        /// <summary>
-        /// Creates queries around the user for all known models.
-        /// use to run a single set of queries to find objects not previously found
-        /// </summary>
-        public void StartQuery()
-        {
-            RefillGlobalQueryQueue();
-        }
-
-        /// <summary>
-        /// Queues queries for all known models around the requested bounds
-        /// </summary>
-        /// <param name="queryBounds"></param>
         public async void QueueQueriesInBounds(ObjectAnchorsBoundingBox queryBounds)
         {
+            Debug.Log("Queueing queries in bounds. + new coordinate System");
             List<ObjectQuery> nextQuerySet = new List<ObjectQuery>();
             SpatialGraph.SpatialGraphCoordinateSystem? coordinateSystem = null;
 
@@ -642,7 +646,7 @@ namespace Microsoft.Azure.ObjectAnchors.Unity.Sample
 
             if (!coordinateSystem.HasValue)
             {
-                Debug.LogError("no coordinate system?");
+                Debug.LogError("No coordinate system available.");
                 return;
             }
 
@@ -655,7 +659,6 @@ namespace Microsoft.Azure.ObjectAnchors.Unity.Sample
 
                 if (tod.UseCustomParameters)
                 {
-                    Debug.Log("Custom params");
                     nextQuery.MinSurfaceCoverage = tod.MinSurfaceCoverage;
                     nextQuery.IsExpectedToBeStandingOnGroundPlane = tod.IsExpectedToBeStandingOnGroundPlane;
                     nextQuery.ExpectedMaxVerticalOrientationInDegrees = tod.ExpectedMaxVerticalOrientationInDegrees;
@@ -679,6 +682,7 @@ namespace Microsoft.Azure.ObjectAnchors.Unity.Sample
             _queryQueue.Enqueue(new Tuple<ObjectAnchorsBoundingBox, IEnumerable<ObjectQuery>>(queryBounds, nextQuerySet));
             Debug.Log($"{Time.frameCount} next query size {nextQuerySet.Count} query queue size {_queryQueue.Count} max scale change {MaxScaleChange} AllowedVerticalOrientationInDegrees {AllowedVerticalOrientationInDegrees}");
         }
+
 
         public IEnumerable<TrackedObject> TrackedObjects => _instanceToTrackedObject.Values;
     }

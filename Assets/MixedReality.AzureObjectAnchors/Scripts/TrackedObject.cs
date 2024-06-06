@@ -51,7 +51,7 @@ namespace Microsoft.Azure.ObjectAnchors.Unity.Sample
 
         private static readonly Dictionary<ObjectInstanceTrackingMode, Color> trackingModeToMultiAnchorColor = new Dictionary<ObjectInstanceTrackingMode, Color>()
         {
-            {ObjectInstanceTrackingMode.HighLatencyAccuratePosition, new Color(0,1,0,0.5f) },
+            {ObjectInstanceTrackingMode.HighLatencyAccuratePosition, new Color(0,1,1,0.5f) },
             {ObjectInstanceTrackingMode.LowLatencyCoarsePosition, new Color(0,1,1,0.5f) },
             {ObjectInstanceTrackingMode.Paused, new Color(1,1,1,0.5f) }
         };
@@ -65,6 +65,7 @@ namespace Microsoft.Azure.ObjectAnchors.Unity.Sample
 
         private void Update()
         {
+
             IObjectAnchorsServiceEventArgs pendingTrackedObjectData = Interlocked.Exchange(ref _pendingTrackedObjectData, null);
             if (pendingTrackedObjectData != null)
             {
@@ -75,6 +76,14 @@ namespace Microsoft.Azure.ObjectAnchors.Unity.Sample
 
             MultiAnchorRenderer.gameObject.SetActive(_objectTracker.MultiAnchorPlacement);
             SingleAnchorRenderer.gameObject.SetActive(_objectTracker.SingleAnchorPlacement);
+            if (_debugText != null)
+            {
+                //if high accuracy mode is enabled, show the debug text
+                _debugText.gameObject.SetActive(false);
+
+            }
+
+
             if (_objectTracker.SingleAnchorPlacement)
             {
                 SingleAnchorRenderer.transform.localScale = _objectTracker.ScaleSingleAnchorPlacement ? _scaleChange : Vector3.one;
@@ -107,14 +116,11 @@ namespace Microsoft.Azure.ObjectAnchors.Unity.Sample
 
         private void UpdateDebugText()
         {
+
             if (_debugText != null)
             {
 
-                _debugText.text =
-                    $"Name: {TrackedObjectState.ModelFileName}\n" +
-                    $"Updated: {TrackedObjectState.LastUpdatedTime.ToString("hh:mm:ss")}\n" +
-                    $"Cov: {TrackedObjectState.SurfaceCoverage}\n" +
-                    $"Scale: {TrackedObjectState.Scale.x} {TrackedObjectState.Scale.y} {TrackedObjectState.Scale.z}\n";
+                _debugText.text = "Chair";
 
                 ObjectAnchorsBoundingBox? bb = TrackedObjectState.BaseLogicalBoundingBox;
                 if (bb.HasValue)
