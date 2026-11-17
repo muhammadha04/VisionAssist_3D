@@ -6,6 +6,9 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
+    path: Assets/MixedReality.AzureObjectAnchors/Scenes/DetectionBenchmark.unity
+    guid: 1c968e6017314b3786914d8572fb9dc9
+  - enabled: 0
     path: Assets/MixedReality.AzureObjectAnchors/Scenes/ObjectDetection.unity
     guid: 805128889349a464895fc1426b82bf0a
   m_configObjects:

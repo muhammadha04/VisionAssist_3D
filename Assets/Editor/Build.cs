@@ -19,7 +19,7 @@ namespace Microsoft.Azure.ObjectAnchors.Unity
             EditorUserBuildSettings.SetPlatformSettings("WindowsStoreApps", "CopyPDBFiles", "false");
 
             EditorUserBuildSettings.wsaUWPVisualStudioVersion = "Visual Studio 2019";
-            EditorUserBuildSettings.wsaUWPSDK = "10.0.18362.0";
+            EditorUserBuildSettings.wsaUWPSDK = "10.0.19041.0";
             EditorUserBuildSettings.wsaSubtarget = WSASubtarget.HoloLens;
 
             PlayerSettings.SetScriptingBackend(BuildTargetGroup.WSA, ScriptingImplementation.IL2CPP);
@@ -29,12 +29,12 @@ namespace Microsoft.Azure.ObjectAnchors.Unity
             
             BuildPlayerOptions buildPlayerOptions = new BuildPlayerOptions()
             {
-                locationPathName = "UWP_mrtk",
+                locationPathName = "Builds/UWP",
                 target = BuildTarget.WSAPlayer,
                 targetGroup = BuildTargetGroup.WSA,
                 options = BuildOptions.None,
                 scenes = EditorBuildSettings.scenes
-                         .Where(scene => scene.enabled && string.Equals(Path.GetFileName(scene.path), "AOASampleScene.unity", StringComparison.OrdinalIgnoreCase))
+                         .Where(scene => scene.enabled && true)
                          .Select(scene => scene.path)
                          .ToArray()
             };
