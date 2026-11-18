@@ -8,8 +8,10 @@
 //                        the object is re-detected at its new position.
 //
 // Keys:
-//   SPACE      start a detection trial (clears current overlays, starts recording head pose)
-//   M          the object was just moved -> start a move trial (needs a current overlay)
+//   SPACE      (re)start detection: pauses AOA, removes all overlays, resumes a fresh session,
+//              starts recording head pose. No need for the hand-menu Start button.
+//   M          the object was just moved -> start a move trial (needs a current overlay; the
+//              running session keeps going and must re-find the object at its new spot)
 //   ENTER      end the current move trial now (e.g. old overlay never disappears)
 //   X          abort the current trial (logged with outcome=aborted)
 //   1 / 2 / 3  distance condition label (near / mid / far)
@@ -46,6 +48,9 @@ namespace Microsoft.Azure.ObjectAnchors.Unity.Sample
         [Header("Trial settings")]
         [Tooltip("A detection trial without a detection is ended after this many seconds.")]
         public float DetectionTimeoutSeconds = 180f;
+
+        [Tooltip("When Space restarts detection, wait at most this long for an in-flight AOA query to finish before resuming.")]
+        public float RestartWaitSeconds = 3f;
 
         [Tooltip("A move trial is ended after this many seconds.")]
         public float MoveTimeoutSeconds = 180f;
@@ -124,6 +129,8 @@ namespace Microsoft.Azure.ObjectAnchors.Unity.Sample
         private double _detectEventTime = -1;
         private double _detectOverlayTime = -1;
         private float _detectCoverage;
+        private bool _restarting;
+        private double _sessionResumeTime = -1;
 
         // ---- move trial
         private double _moveKeyTime;
@@ -199,6 +206,7 @@ namespace Microsoft.Azure.ObjectAnchors.Unity.Sample
 
             RecordHeadPose(now);
             HandleKeys(now);
+            ContinueSessionRestart(now);
             ProcessServiceEvents();
             TrackOverlays(now);
             CheckTrialProgress(now);
@@ -257,29 +265,70 @@ namespace Microsoft.Azure.ObjectAnchors.Unity.Sample
             _detected = null;
             _detectEventTime = -1;
             _detectOverlayTime = -1;
+            _sessionResumeTime = -1;
+            _restarting = true;
 
-            // Clear every existing detection so the object has to be found again.
-            var tracker = ObjectTracker.Instance;
-            if (tracker != null && _service != null)
+            // Restart the detection session: pause AOA (stops searching and drops queued queries),
+            // remove every existing instance/overlay, then resume once any in-flight query has finished
+            // (see ContinueSessionRestart). This replaces the hand-menu Start button.
+            if (_service != null)
             {
-                foreach (var to in tracker.TrackedObjects.ToList())
-                {
-                    if (to == null) continue;
-                    Guid id = to.TrackedObjectState.InstanceId;
-                    _ignoredInstances.Add(id);
-                    try { _service.RemoveObjectInstance(id); }
-                    catch (Exception ex) { Debug.LogWarning($"[DetectionBenchmark] RemoveObjectInstance failed: {ex.Message}"); }
-                }
+                try { if (_service.Status == ObjectAnchorsServiceStatus.Running) _service.Pause(); }
+                catch (Exception ex) { Debug.LogWarning($"[DetectionBenchmark] Pause failed: {ex.Message}"); }
             }
+            int cleared = ClearAllInstances();
 
-            LogEvent("detect_trial_start", Guid.Empty, Guid.Empty, null, 0, $"cleared={_ignoredInstances.Count}");
+            LogEvent("detect_trial_start", Guid.Empty, Guid.Empty, null, 0, $"cleared={cleared}");
             Beep(_beepStart);
+            _lastResult = $"Trial {_trialCounter}: restarting detection...";
+        }
+
+        private int ClearAllInstances()
+        {
+            int n = 0;
+            if (_service == null) return 0;
+            var ids = new HashSet<Guid>();
+            var tracker = ObjectTracker.Instance;
+            if (tracker != null)
+                foreach (var to in tracker.TrackedObjects.ToList())
+                    if (to != null) ids.Add(to.TrackedObjectState.InstanceId);
+            try { foreach (var r in _service.TrackingResults) ids.Add(r.InstanceId); }
+            catch (Exception) { }
+
+            foreach (var id in ids)
+            {
+                _ignoredInstances.Add(id);
+                try { _service.RemoveObjectInstance(id); n++; }
+                catch (Exception ex) { Debug.LogWarning($"[DetectionBenchmark] RemoveObjectInstance failed: {ex.Message}"); }
+            }
+            return n;
+        }
+
+        // Called every frame while a detection session restart is pending.
+        private void ContinueSessionRestart(double now)
+        {
+            if (!_restarting || _service == null) return;
+            var tracker = ObjectTracker.Instance;
+
+            // Anything that finishes detecting while we restart belongs to the old session: drop it.
+            ClearAllInstances();
+
+            bool queryBusy = tracker != null && tracker.QueryActive;
+            if (queryBusy && now - _trialStart < RestartWaitSeconds) return;
+
+            try { _service.Resume(); }
+            catch (Exception ex) { Debug.LogWarning($"[DetectionBenchmark] Resume failed: {ex.Message}"); return; }
+
+            _restarting = false;
+            _sessionResumeTime = now;
+            LogEvent("detection_session_started", Guid.Empty, Guid.Empty, null, 0, $"waited={now - _trialStart:F2}s");
             _lastResult = $"Trial {_trialCounter}: searching...";
         }
 
         private void OnDetectionTrialObjectAdded(ServiceEvent ev, InstanceInfo info)
         {
-            if (_detected != null || _ignoredInstances.Contains(info.InstanceId) || ev.Time < _trialStart) return;
+            if (_restarting || _sessionResumeTime < 0 || ev.Time < _sessionResumeTime) { _ignoredInstances.Add(info.InstanceId); return; }
+            if (_detected != null || _ignoredInstances.Contains(info.InstanceId)) return;
             if (!ModelMatches(info.ModelId)) return;
 
             _detected = info;
@@ -352,6 +401,11 @@ namespace Microsoft.Azure.ObjectAnchors.Unity.Sample
                 return;
             }
             if (_phase == Phase.Moving) AbortTrial(now);
+            if (_service == null || _service.Status != ObjectAnchorsServiceStatus.Running)
+            {
+                _lastResult = "Detection not running - press Space first";
+                return;
+            }
 
             _moveOld.Clear();
             var tracker = ObjectTracker.Instance;
@@ -418,6 +472,7 @@ namespace Microsoft.Azure.ObjectAnchors.Unity.Sample
         {
             if (_phase == Phase.Detecting) FinishDetectionTrial(now, "aborted");
             else if (_phase == Phase.Moving) FinishMoveTrial(now, "aborted");
+            if (_restarting) { _restarting = false; try { _service?.Resume(); } catch (Exception) { } }
         }
 
         private void CheckTrialProgress(double now)
@@ -702,7 +757,7 @@ namespace Microsoft.Azure.ObjectAnchors.Unity.Sample
             string status;
             switch (_phase)
             {
-                case Phase.Detecting: status = $"DETECTING  {now - _trialStart:F1}s"; break;
+                case Phase.Detecting: status = _restarting ? "RESTARTING DETECTION..." : $"DETECTING  {now - _trialStart:F1}s"; break;
                 case Phase.Moving:
                     status = $"MOVED  {now - _moveKeyTime:F1}s  old:{(_oldOverlayGoneTime >= 0 ? "gone" : "shown")}  new:{(_newOverlayTime >= 0 ? "found" : "-")}";
                     break;
